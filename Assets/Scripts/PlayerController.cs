@@ -7,13 +7,15 @@ public class PlayerController : MonoBehaviour {
 	public float maxVelocity = 8;
 	public float lookSpeed = 10;
 	public float jumpSpeed = 8;
-	public float upCastLength = 6;
+	public float gravity = -18;
+	public float fallDistance = 50;
+	public float maxCameraHeight = 6;
 
 	private Rigidbody rigidPlayer;
 	private Vector3 playerDirection = Vector3.zero;
+	private Vector3 previousDirection = Vector3.zero;
 	private Vector3 playerVelocity = Vector3.zero;
 	private Vector3 expectedPosition = Vector3.zero;
-	private Vector3 gravity = Vector3.zero;
 	private float distanceToGround = 0; 
 	private float clearence = 0; 
 
@@ -29,13 +31,16 @@ public class PlayerController : MonoBehaviour {
 	{
 		rigidPlayer = transform.rigidbody;
 		distanceToGround = collider.bounds.extents.y;
-		gravity = Physics.gravity;
 	}
 
 	void FixedUpdate () 
 	{
 		DetectInput();
 		CalculateVelocity();
+		if(isGrounded() && Input.GetKeyDown (KeyCode.Space))
+		{
+			playerVelocity.y = jumpSpeed;
+		}
 		ApplyVelocity();
 		CalculateClearence();
 	}
@@ -45,8 +50,6 @@ public class PlayerController : MonoBehaviour {
 		playerDirection = DetermineDirection();
 
 		//TODO: Debug why jump isn't working
-		if(Input.GetKeyDown (KeyCode.Space))
-			playerVelocity.y = jumpSpeed;
 	}
 
 	Vector3 DetermineDirection()
@@ -65,8 +68,11 @@ public class PlayerController : MonoBehaviour {
 		if(tempDirection != Vector3.zero)
 		{
 			tempDirection.Normalize();
+			previousDirection = tempDirection;
 			ChangeLookDirection(tempDirection);
 		}
+		else 
+			ChangeLookDirection(previousDirection);
 
 		return tempDirection;
 	}
@@ -81,10 +87,10 @@ public class PlayerController : MonoBehaviour {
 		playerVelocity = rigidPlayer.velocity;
 		if(playerVelocity.magnitude < maxVelocity)
 			playerVelocity += playerDirection * acceleration;
-		//else
-			//playerVelocity = playerDirection * maxVelocity;
 
-		playerVelocity += gravity * Time.fixedDeltaTime;
+		playerVelocity.y += gravity * Time.fixedDeltaTime;
+//		if(jumpOffset > 0)
+//			jumpOffset += gravity.y * Time.fixedDeltaTime;
 	}
 
 	void ApplyVelocity ()
@@ -95,19 +101,24 @@ public class PlayerController : MonoBehaviour {
 			rigidPlayer.velocity = Vector3.zero;
 	}
 
+	bool isGrounded ()
+	{
+		return Physics.Raycast(transform.position, -Vector3.up, distanceToGround + 0.1f);
+	}
+
 	bool CanMoveTo ()
 	{
 		expectedPosition = playerDirection/2 + transform.position;
-		return Physics.Raycast(expectedPosition, -Vector3.up, distanceToGround + 2);
+		return Physics.Raycast(expectedPosition, -Vector3.up, distanceToGround + fallDistance);
 	}
 
 	void CalculateClearence ()
 	{
 		RaycastHit hit;
-		Ray upRay = new Ray(transform.position, Vector3.up * upCastLength);
+		Ray upRay = new Ray(transform.position, Vector3.up * maxCameraHeight);
 		if (Physics.Raycast(upRay, out hit))
 			clearence = hit.distance;
 		else
-			clearence = upCastLength;
+			clearence = maxCameraHeight;
 	}
 }
