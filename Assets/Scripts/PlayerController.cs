@@ -3,6 +3,7 @@ using System.Collections;
 
 public class PlayerController : MonoBehaviour {
 
+	new Transform transform;
 	public float acceleration = 0.5f;
 	public float maxVelocity = 8;
 	public float lookSpeed = 10;
@@ -29,6 +30,7 @@ public class PlayerController : MonoBehaviour {
 
 	void Start () 
 	{
+		transform = gameObject.transform;
 		rigidPlayer = transform.rigidbody;
 		distanceToGround = collider.bounds.extents.y;
 	}

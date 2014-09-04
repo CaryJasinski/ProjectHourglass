@@ -23,5 +23,5 @@ public class SmoothFollowTarget : MonoBehaviour {
 		if(target.CompareTag("Player"))
 			targetPosition.y = target.position.y + playerController.Clearence - 1;
 		transform.position = Vector3.SmoothDamp(transform.position, targetPosition, ref velocity, followSpeed);
-	}
+	}	
 }
