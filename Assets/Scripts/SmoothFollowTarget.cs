@@ -17,7 +17,7 @@ public class SmoothFollowTarget : MonoBehaviour {
 			playerController = target.GetComponent<PlayerController>();
 	}
 
-	void FixedUpdate () 
+	void LateUpdate () 
 	{
 		targetPosition = target.position + followOffset;
 		if(target.CompareTag("Player"))
